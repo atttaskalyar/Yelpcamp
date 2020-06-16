@@ -21,9 +21,14 @@
 
             <div class="thumbnail">
                 <img src="<%= element.image %> " alt="">
-                <div class="caption>" <h2><%= element.name %> </h2>
+                <div class="caption>" <h2>
+                    <%= element.name %> </h2>
                 </div>
-            </div>
+            <p>
+                <a href="campsites/<%= element._id %>" class="btn btn-primary">More Info</a>
+            </p>
+        </div>
+            
 
         </div>
         <%  }); %>
