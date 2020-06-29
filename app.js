@@ -19,6 +19,12 @@ app.set("view engine","ejs");
 app.use(express.static(__dirname + "/public"));
 seedDB();
 
+//authentication logic
+app.use(function(req,res,next){
+    res.locals.currentUser= req.user;
+    next();
+})
+
 
 //Passport configuration
 app.use(require("express-session")({
@@ -43,12 +49,13 @@ app.get("/",function(require,respond){
 
 app.get("/campsites",function(require,respond){
     //we take the inputs from the server
+    console.log(require.user);
     campSite.find({},function(err,campsites){
         if(err){
             console.log(err);
         }
         else{ 
-            respond.render("campgrounds/campsites",{campsites:campsites});
+            respond.render("campgrounds/campsites",{campsites:campsites,currentUser:require.user});
             }
     });
       //now render an html page
@@ -99,7 +106,7 @@ app.get("/campsites/:id",function(require,respond){
 //===============================
 //COMMENT ROUTES
 //===============================
-app.get("/campsites/:id/comments/new",function(req,res){
+app.get("/campsites/:id/comments/new",isLoggedIn,function(req,res){
     //find campground by id
     campSite.findById(req.params.id,function(err,campground){
         if(err){
@@ -112,7 +119,7 @@ app.get("/campsites/:id/comments/new",function(req,res){
 });
 
 
-app.post("/campsites/:id/comments",function(req,res){
+app.post("/campsites/:id/comments",isLoggedIn,function(req,res){
     //lookup campground using id
     campSite.findById(req.params.id,function(err,campsite){
         if(err){
@@ -162,6 +169,34 @@ app.post("/register",function(req,res){
         }
     });
 });
+
+
+app.get("/login",function(req,res){
+    res.render("login");
+});
+
+app.post("/login",passport.authenticate("local",
+{
+    successRedirect: "/campsites",
+    failureRedirect: "/login"
+}),function(req,res){
+    
+});
+
+//logout route
+app.get("/logout",function(req,res){
+    req.logout();
+    res.redirect("/campsites");
+});
+
+function isLoggedIn(req,res,next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    else{
+        res.redirect("/login");
+    }
+}
 
 
 
